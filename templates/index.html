@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <h1 style="text-align: center;">raspiFrame</h1>
+
+    <div class="center">
+        <form action="/" method="POST" enctype="multipart/form-data">
+            <input type="text" name="picName" id="picName" placeholder="Picture Name">
+            <br>
+            <input type="file" name="picFile" id="picFile" accept=".jpg, .jpeg, .png">
+            <br>
+            <input type="submit" value="Add Picture">
+        </form>
+    </div>
+
+    <table class="center">
+        <tr>
+            <th>Name</th>
+            <th>File</th>
+            <th>Image</th>
+            <th>Actions</th>
+        </tr>
+        {% for picture in pictures %}
+        <tr>
+            <td>{{ picture.name }}</td>
+            <td>{{ picture.filename }}</td>
+            <td><img src="{{ url_for('image', id=picture.id) }}" alt="{{ picture.name }}" style="height: 100px;"></td>
+            <td>
+                <a href="/delete/{{picture.id}}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </div>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+body{
+    font-family:'Courier New', Courier, monospace;
+}
+
+td{
+    width: 200px;
+    height: 50px;
+    padding: 0px;
+    text-align: center;
+}
+
+tr{
+    width: 200px;
+    height: 50px;
+    padding: 0px;
+    text-align: center;
+}
+
+form{
+    display: block;
+    text-align: center;
+    font-family:'Courier New', Courier, monospace;
+}
+
+input{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family:'Courier New', Courier, monospace;
+}
+
+label{
+    font-family:'Courier New', Courier, monospace;
+}
+
+.center{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card{
+    border-width: 1px;
+    border: solid;
+    border-color: black;
+}
