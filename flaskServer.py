@@ -2,7 +2,6 @@ from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
 from PIL import Image
-import mimetypes
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -92,4 +91,4 @@ def index():
         return render_template('index.html', pictures=pictures)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
