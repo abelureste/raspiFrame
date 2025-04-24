@@ -44,21 +44,6 @@ def resize_and_crop(img, target_width=600, target_height=448):
 
     return img.crop((left, top, right, bottom))
 
-def correct_orientation(img):
-    exif = img.getexif()
-    if exif:
-        for tag, value in exif.items():
-            decoded_tag = ExifTags.TAGS.get(tag, tag)
-            if decoded_tag == "Orientation":
-                orientation = value
-                if orientation == 3:
-                    img = img.rotate(180, expand=True)
-                elif orientation == 6:
-                    img == img.rotate(270, expand=True)
-                elif orientation == 8:
-                    img = img.rotate(90, expand=True)
-                break
-    return img
 
 @app.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete(id):
@@ -85,7 +70,6 @@ def index():
         try:
             register_heif_opener()
             img = Image.open(picFile.stream)
-            img = correct_orientation(img)
             img = resize_and_crop(img)
             
             img_io = BytesIO()
