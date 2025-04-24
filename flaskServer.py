@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ExifTags
 from pillow_heif import register_heif_opener
 
 app = Flask(__name__)
@@ -44,6 +44,22 @@ def resize_and_crop(img, target_width=600, target_height=448):
 
     return img.crop((left, top, right, bottom))
 
+def correct_orientation(img):
+    exif = img.getexif()
+    if exif:
+        for tag, value in exif.items():
+            decoded_tag = ExifTags.TAGS.get(tag, tag)
+            if decoded_tag == "Orientation":
+                orientation = value
+                if orientation == 3:
+                    img = img.rotate(180, expand=True)
+                elif orientation == 6:
+                    img == img.rotate(270, expand=True)
+                elif orientation == 8:
+                    img = img.rotate(90, expand=True)
+                break
+    return img
+
 @app.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete(id):
     deletePicture = Data.query.get_or_404(id)
@@ -69,6 +85,7 @@ def index():
         try:
             register_heif_opener()
             img = Image.open(picFile.stream)
+            img = correct_orientation(img)
             img = resize_and_crop(img)
             
             img_io = BytesIO()
@@ -78,6 +95,7 @@ def index():
             img_io.seek(0)
 
             newPic = Data(name=picName, filename=picFile.filename, file=img_io.read())
+
         except:
             return "Please enter a picture"
 
