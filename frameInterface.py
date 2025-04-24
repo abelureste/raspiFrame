@@ -3,7 +3,7 @@
 import os, time, glob
 from PIL import Image
 from inky.auto import auto
-from flaskServer import Data
+from flaskServer import Data, app
 from io import BytesIO
 
 print("Displaying your images")
@@ -26,28 +26,30 @@ print(f"Retrieving images from {imagePath}")
 validFormats = ('.jpg','.png')
 
 def printImage():
-    imageFiles = Data.query.all()
+    with app.app_context():
+        imageFiles = Data.query.all()
 
-    if not imageFiles:
-        print("No images found")
+        if not imageFiles:
+            print("No images found")
+            time.sleep(30)
 
-    else:
-        for imageFile in imageFiles:
-            try:
-                print(f"Displaying: {imageFile.name}")
+        else:    
+            for imageFile in imageFiles:
+                try:
+                    print(f"Displaying: {imageFile.name}")
 
-                img = Image.open(BytesIO(imageFile.file))
+                    img = Image.open(BytesIO(imageFile.file))
 
-                inky_display.set_image(img)
-                inky_display.show()
+                    inky_display.set_image(img)
+                    inky_display.show()
 
-                img.close()
-                sleepTime = 30 * 60
-                print(f"Sleeping for {sleepTime / 60} minutes...")
-                time.sleep(sleepTime)
+                    img.close()
+                    sleepTime = 30 * 60
+                    print(f"Sleeping for {sleepTime / 60} minutes...")
+                    time.sleep(sleepTime)
 
-            except Exception as e:
-                print(f"Error displaying {imageFile}: {e}")
+                except Exception as e:
+                    print(f"Error displaying {imageFile}: {e}")
 
 # Loops indefinitely
 while True:
