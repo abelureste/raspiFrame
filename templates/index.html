@@ -28,7 +28,6 @@
         {% for picture in pictures %}
         <tr>
             <td>{{ picture.name }}</td>
-            <td>{{ picture.filename }}</td>
             <td><img src="{{ url_for('image', id=picture.id) }}" alt="{{ picture.name }}" style="height: 100px;"></td>
             <td>
                 <a href="/delete/{{picture.id}}">Delete</a>

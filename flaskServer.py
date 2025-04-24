@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
 from PIL import Image
+from pillow_heif import register_heif_opener
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -66,9 +67,10 @@ def index():
         picFile = request.files['picFile']
 
         try:
+            register_heif_opener()
             img = Image.open(picFile.stream)
             img = resize_and_crop(img)
-
+            
             img_io = BytesIO()
             if img.mode != "RGB":
                 img = img.convert("RGB")
