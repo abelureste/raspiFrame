@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
-from PIL import Image, ExifTags
+from PIL import Image, ExifTags, ImageOps
 from pillow_heif import register_heif_opener
 
 app = Flask(__name__)
@@ -13,7 +13,6 @@ class Data(db.Model):
     name = db.Column(db.String(200))
     file = db.Column(db.LargeBinary)
     filename = db.Column(db.String(200))
-    pic_orientation = db.Column(db.Integer)
 
     def __repr__(self):
         return f'<Data {self.name}>'
@@ -34,7 +33,6 @@ def resize_and_crop(img, target_width=600, target_height=448):
 
     img = img.resize((new_width, new_height), Image.LANCZOS)
 
-    # Step 2: Center crop
     left = (new_width - target_width) // 2
     top = (new_height - target_height) // 2
     right = left + target_width
@@ -68,19 +66,7 @@ def index():
         try:
             register_heif_opener()
             img = Image.open(picFile.stream)
-
-            orientation = None
-            try:
-                exif = img._getexif()
-                if exif is not None:
-                    for tag, value in exif.items():
-                        decoded_tag = ExifTags.TAGS.get(tag, tag)
-                        if decoded_tag == 'Orientation':
-                            orientation = value
-                            break
-            except Exception as e:
-                print(f"EXIF reading error: {e}")
-
+            img = ImageOps.exif_transpose(img)
             img = resize_and_crop(img)
 
             img_io = BytesIO()
@@ -93,7 +79,6 @@ def index():
                 name=picName,
                 filename=picFile.filename,
                 file=img_io.read(),
-                pic_orientation=orientation
             )
 
         except Exception as e:
