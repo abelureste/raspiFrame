@@ -1,7 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
-from PIL import Image, ExifTags, ImageOps
+from PIL import Image, ExifTags
 from pillow_heif import register_heif_opener
 
 app = Flask(__name__)
@@ -16,9 +16,33 @@ class Data(db.Model):
 
     def __repr__(self):
         return f'<Data {self.name}>'
-    
+
 with app.app_context():
     db.create_all()
+
+def auto_rotate(img):
+    try:
+        exif = img._getexif()
+        if exif is not None:
+            orientation_key = None
+            for key, value in ExifTags.TAGS.items():
+                if value == 'Orientation':
+                    orientation_key = key
+                    break
+
+            if orientation_key and orientation_key in exif:
+                orientation = exif[orientation_key]
+
+                if orientation == 3:
+                    img = img.rotate(180, expand=True)
+                elif orientation == 6:
+                    img = img.rotate(270, expand=True)
+                elif orientation == 8:
+                    img = img.rotate(90, expand=True)
+    except Exception as e:
+        print(f"Error auto-rotating image: {e}")
+
+    return img
 
 def resize_and_crop(img, target_width=600, target_height=448):
     img_ratio = img.width / img.height
@@ -37,9 +61,7 @@ def resize_and_crop(img, target_width=600, target_height=448):
     top = (new_height - target_height) // 2
     right = left + target_width
     bottom = top + target_height
-
     return img.crop((left, top, right, bottom))
-
 
 @app.route('/delete/<int:id>', methods=['GET', 'POST'])
 def delete(id):
@@ -51,7 +73,7 @@ def delete(id):
         return redirect('/')
     except:
         return 'There was an issue deleting your picture'
-    
+
 @app.route('/image/<int:id>')
 def image(id):
     pic = Data.query.get_or_404(id)
@@ -66,7 +88,8 @@ def index():
         try:
             register_heif_opener()
             img = Image.open(picFile.stream)
-            img = ImageOps.exif_transpose(img)
+
+            img = auto_rotate(img)
             img = resize_and_crop(img)
 
             img_io = BytesIO()
@@ -94,7 +117,6 @@ def index():
     else:
         pictures = Data.query.order_by(Data.name).all()
         return render_template('index.html', pictures=pictures)
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0')
